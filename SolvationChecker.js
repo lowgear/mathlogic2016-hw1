@@ -1,4 +1,4 @@
-function Variable(name) {
+﻿function Variable(name) {
 	return {
 		name: name,
 		s: name
@@ -180,9 +180,81 @@ var axioms = {
 	}
 }
 
-function isProvedByAxiom(r) {
+function isAxiom(r) {
 	for (n in axioms)
 		if (axioms[n](r))
 			return n;
 }
 
+var fs = require('fs');
+var inputStrings = fs.readFileSync('input.txt', 'utf8').split('\n');
+
+var hypothesyString = inputStrings.shift().replace(/[\s\r]/g, '');
+var output = String(hypothesyString);
+
+var hypothesis = hypothesyString.split(/,|\|-/);
+
+var hypothesyNumber = {};
+for (var i = 0; i < hypothesis.length - 1; i++)
+	hypothesyNumber[Expr(hypothesis[i]).s] = i + 1;
+
+var rm = {};
+var lm = {};
+var exps = {};
+
+function isMP(e) {
+	for (index in rm[e.s]) {
+		var j = rm[e.s][index];
+		var i = lm[exps[j].left.s];
+		if (i !== undefined)
+			return {
+				i: i,
+				j: j
+			}
+	}
+}
+
+function checkExpr(e, i) {
+	output += '\n(' + (i) + ') ' + e.s;
+	
+	var res = isAxiom(e);
+	if (res !== undefined) {
+		output += ' (Сх. акс. ' + res + ')';
+		return;
+	}
+	
+	res = hypothesyNumber[e.s];
+	if (res !== undefined) {
+		output += ' (Предп. ' + res + ')';
+		return;
+	}
+	
+	res = isMP(e);
+	if (res !== undefined) {
+		output += ' (M.P. ' + res.i + ' ' + res.j + ')';
+		return;
+	}
+	
+	output += ' (Не доказано)';
+}
+
+for (var i = 1; i < inputStrings.length; i++) {
+	var e = Expr(inputStrings[i - 1].replace(/[\s\r]/g, ''));
+	
+	checkExpr(e, i);
+	
+	if (lm[e.s] === undefined)
+		lm[e.s] = i;
+	if (e.sign === '->') {
+		if (rm[e.right.s] === undefined) {
+			var a = [];
+			a.push(i);
+			rm[e.right.s] = a;
+		} else {
+			rm[e.right.s].push(i);
+		}
+	}
+	exps[i] = e;
+}
+
+fs.writeFileSync('output.txt', output);
