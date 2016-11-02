@@ -1,6 +1,5 @@
 ﻿function Variable(name) {
 	return {
-		name: name,
 		s: name
 	}
 }
