@@ -231,7 +231,7 @@ function checkExpr(e, i) {
 	
 	res = isMP(e);
 	if (res !== undefined) {
-		output += ' (M.P. ' + res.i + ' ' + res.j + ')';
+		output += ' (M.P. ' + res.i + ', ' + res.j + ')';
 		return;
 	}
 	
